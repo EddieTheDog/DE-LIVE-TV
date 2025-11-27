@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>LIVE TV Control Panel</title>
+  <link rel="stylesheet" href="../style.css">
+  <script defer src="../control.js"></script>
+</head>
+<body style="padding:20px;">
+<h1>D&E LIVE TV - Control Panel</h1>
+
+<label>Breaking News:</label><br>
+<input id="breakingInput" style="width:300px;"><br><br>
+
+<label>Lower Third Title:</label><br>
+<input id="titleInput" style="width:300px;"><br><br>
+
+<label>Lower Third Subtitle:</label><br>
+<input id="subInput" style="width:300px;"><br><br>
+
+<label>Ticker Text:</label><br>
+<textarea id="tickerInput" style="width:300px;height:80px;"></textarea><br><br>
+
+<button onclick="updateLive()">Update LIVE TV</button>
+</body>
+</html>
