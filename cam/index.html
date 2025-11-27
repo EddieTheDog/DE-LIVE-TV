@@ -17,7 +17,7 @@
       const video = document.getElementById('localVideo');
       const startBtn = document.getElementById('startCam');
       const stopBtn = document.getElementById('stopCam');
-      const ws = new WebSocket('wss://YOUR-SIGNALING-SERVER.onrender.com'); // Replace with your Render WS URL
+      const ws = new WebSocket('wss://de-live-tv-signaling.onrender.com'); // <- Replace with your Render URL
       let stream;
       let peerConnections = {};
 
@@ -30,10 +30,8 @@
             const pc = new RTCPeerConnection();
             peerConnections[data.id] = pc;
             stream.getTracks().forEach(track => pc.addTrack(track, stream));
-            pc.onicecandidate = event => {
-              if(event.candidate){
-                ws.send(JSON.stringify({type:'candidate', candidate:event.candidate, id:data.id}));
-              }
+            pc.onicecandidate = e => {
+              if(e.candidate) ws.send(JSON.stringify({type:'candidate', candidate:e.candidate, id:data.id}));
             };
             const offer = await pc.createOffer();
             await pc.setLocalDescription(offer);
@@ -45,8 +43,7 @@
             break;
 
           case 'candidate':
-            if(peerConnections[data.id])
-              await peerConnections[data.id].addIceCandidate(new RTCIceCandidate(data.candidate));
+            if(peerConnections[data.id]) await peerConnections[data.id].addIceCandidate(new RTCIceCandidate(data.candidate));
             break;
 
           case 'control':
