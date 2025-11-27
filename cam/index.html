@@ -3,55 +3,78 @@
 <head>
   <meta charset="UTF-8">
   <title>Camera Broadcast</title>
-  <script src="../table.js"></script>
+  <link rel="stylesheet" href="../style.css">
 </head>
 <body>
   <h1>Camera Broadcast</h1>
-  <video id="localVideo" autoplay playsinline muted style="width:80%; border:2px solid red;"></video>
+  <video id="localVideo" autoplay playsinline muted style="width:90%; border:2px solid red;"></video>
   <button id="startCam">Start Broadcast</button>
+  <button id="stopCam" disabled>Stop Broadcast</button>
 
-  <script>
-    const video = document.getElementById('localVideo');
-    const ws = new WebSocket('ws://localhost:8080'); // Replace with Render URL
-    let peerConnections = {};
-    let stream;
+  <script src="../table.js" defer></script>
+  <script defer>
+    window.addEventListener('DOMContentLoaded', async () => {
+      const video = document.getElementById('localVideo');
+      const startBtn = document.getElementById('startCam');
+      const stopBtn = document.getElementById('stopCam');
+      const ws = new WebSocket('wss://YOUR-SIGNALING-SERVER.onrender.com'); // Replace with your Render WS URL
+      let stream;
+      let peerConnections = {};
 
-    ws.onopen = () => ws.send(JSON.stringify({type:'broadcaster'}));
+      ws.onopen = () => ws.send(JSON.stringify({type:'broadcaster'}));
 
-    ws.onmessage = async msg => {
-      const data = JSON.parse(msg.data);
-      switch(data.type){
-        case 'watcher':
-          const pc = new RTCPeerConnection();
-          stream.getTracks().forEach(track => pc.addTrack(track, stream));
-          peerConnections[data.id] = pc;
+      ws.onmessage = async msg => {
+        const data = JSON.parse(msg.data);
+        switch(data.type){
+          case 'watcher':
+            const pc = new RTCPeerConnection();
+            peerConnections[data.id] = pc;
+            stream.getTracks().forEach(track => pc.addTrack(track, stream));
+            pc.onicecandidate = event => {
+              if(event.candidate){
+                ws.send(JSON.stringify({type:'candidate', candidate:event.candidate, id:data.id}));
+              }
+            };
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            ws.send(JSON.stringify({type:'offer', sdp:offer, id:data.id}));
+            break;
 
-          pc.onicecandidate = event => {
-            if(event.candidate){
-              ws.send(JSON.stringify({type:'candidate', candidate:event.candidate, id:data.id}));
-            }
-          };
+          case 'answer':
+            await peerConnections[data.id].setRemoteDescription(new RTCSessionDescription(data.sdp));
+            break;
 
-          const offer = await pc.createOffer();
-          await pc.setLocalDescription(offer);
-          ws.send(JSON.stringify({type:'offer', sdp:offer, id:data.id}));
-          break;
+          case 'candidate':
+            if(peerConnections[data.id])
+              await peerConnections[data.id].addIceCandidate(new RTCIceCandidate(data.candidate));
+            break;
 
-        case 'answer':
-          await peerConnections[data.id].setRemoteDescription(new RTCSessionDescription(data.sdp));
-          break;
+          case 'control':
+            if(data.action === 'start') startBroadcast();
+            if(data.action === 'stop') stopBroadcast();
+            break;
+        }
+      };
 
-        case 'candidate':
-          await peerConnections[data.id].addIceCandidate(new RTCIceCandidate(data.candidate));
-          break;
+      async function startBroadcast(){
+        stream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
+        video.srcObject = stream;
+        updateLiveState({broadcast_on:true});
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
       }
-    };
 
-    document.getElementById('startCam').onclick = async () => {
-      stream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
-      video.srcObject = stream;
-      updateLiveState({broadcast_on:true});
-    };
+      function stopBroadcast(){
+        if(stream) stream.getTracks().forEach(t => t.stop());
+        video.srcObject = null;
+        updateLiveState({broadcast_on:false});
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+      }
+
+      startBtn.onclick = startBroadcast;
+      stopBtn.onclick = stopBroadcast;
+    });
   </script>
 </body>
 </html>
