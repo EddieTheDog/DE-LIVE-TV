@@ -4,31 +4,36 @@
   <meta charset="UTF-8">
   <title>D&E NEWS LIVE</title>
   <link rel="stylesheet" href="style.css">
-  <script defer src="live.js"></script>
+  <script src="table.js"></script>
+  <script>
+    function refreshLive() {
+      const state = getLiveState();
+      document.getElementById("breaking").textContent = state.breaking;
+      document.getElementById("ltTitle").textContent = state.lt_title;
+      document.getElementById("ltSub").textContent = state.lt_sub;
+      document.getElementById("ticker").textContent = state.ticker;
+
+      const video = document.getElementById("liveVideo");
+      if(state.broadcast_on && state.videoStream){
+        video.srcObject = state.videoStream;
+        video.style.display = "block";
+      } else {
+        video.srcObject = null;
+        video.style.display = "none";
+      }
+    }
+
+    setInterval(refreshLive, 500);
+  </script>
 </head>
 <body>
-  <div class="header">
-    <div class="channel-name">D&E NEWS LIVE</div>
-    <div class="live-badge">LIVE</div>
-    <div id="clock"></div>
-  </div>
+  <h1>D&E NEWS LIVE</h1>
 
-  <div class="breaking-bar">
-    <span class="breaking-label">BREAKING</span>
-    <span id="breaking"></span>
-  </div>
+  <div id="breaking" style="color:red; font-weight:bold;"></div>
+  <video id="liveVideo" autoplay playsinline controls style="width:90%; max-width:600px; display:none; border:2px solid red;"></video>
 
-  <div class="video-container">
-    <!-- Optional: live video from /cam could be embedded here using WebRTC if needed -->
-  </div>
-
-  <div class="lower-third">
-    <div id="lt-title"></div>
-    <div id="lt-sub"></div>
-  </div>
-
-  <div class="ticker">
-    <p id="ticker"></p>
-  </div>
+  <div id="ltTitle" style="font-size:24px; font-weight:bold;"></div>
+  <div id="ltSub" style="font-size:18px;"></div>
+  <div id="ticker" style="background:black; color:white; padding:5px; overflow:hidden; white-space:nowrap;"></div>
 </body>
 </html>
