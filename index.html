@@ -2,38 +2,51 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>D&E NEWS LIVE</title>
-  <link rel="stylesheet" href="style.css">
+  <title>D&E LIVE TV</title>
   <script src="table.js"></script>
-  <script>
-    function refreshLive() {
-      const state = getLiveState();
-      document.getElementById("breaking").textContent = state.breaking;
-      document.getElementById("ltTitle").textContent = state.lt_title;
-      document.getElementById("ltSub").textContent = state.lt_sub;
-      document.getElementById("ticker").textContent = state.ticker;
-
-      const video = document.getElementById("liveVideo");
-      if(state.broadcast_on && state.videoStream){
-        video.srcObject = state.videoStream;
-        video.style.display = "block";
-      } else {
-        video.srcObject = null;
-        video.style.display = "none";
-      }
-    }
-
-    setInterval(refreshLive, 500);
-  </script>
 </head>
 <body>
-  <h1>D&E NEWS LIVE</h1>
+  <h1>D&E LIVE TV</h1>
+  <video id="remoteVideo" autoplay playsinline controls style="width:90%; border:2px solid red;"></video>
+  <div id="breaking"></div>
+  <div id="ltTitle"></div>
+  <div id="ltSub"></div>
+  <div id="ticker"></div>
 
-  <div id="breaking" style="color:red; font-weight:bold;"></div>
-  <video id="liveVideo" autoplay playsinline controls style="width:90%; max-width:600px; display:none; border:2px solid red;"></video>
+  <script>
+    const video = document.getElementById('remoteVideo');
+    const ws = new WebSocket('ws://localhost:8080'); // Replace with Render URL
+    const pc = new RTCPeerConnection();
+    const viewerId = Math.floor(Math.random()*1000000);
 
-  <div id="ltTitle" style="font-size:24px; font-weight:bold;"></div>
-  <div id="ltSub" style="font-size:18px;"></div>
-  <div id="ticker" style="background:black; color:white; padding:5px; overflow:hidden; white-space:nowrap;"></div>
+    ws.onopen = () => ws.send(JSON.stringify({type:'watcher', id:viewerId}));
+
+    ws.onmessage = async msg => {
+      const data = JSON.parse(msg.data);
+      switch(data.type){
+        case 'offer':
+          await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          ws.send(JSON.stringify({type:'answer', sdp:answer, id:data.id}));
+          break;
+
+        case 'candidate':
+          await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+          break;
+      }
+    };
+
+    pc.ontrack = event => video.srcObject = event.streams[0];
+
+    // Update live ticker every 500ms
+    setInterval(() => {
+      const state = getLiveState();
+      document.getElementById('breaking').textContent = state.breaking;
+      document.getElementById('ltTitle').textContent = state.lt_title;
+      document.getElementById('ltSub').textContent = state.lt_sub;
+      document.getElementById('ticker').textContent = state.ticker;
+    }, 500);
+  </script>
 </body>
 </html>
