@@ -2,25 +2,50 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>LIVE TV Control Panel</title>
+  <title>Control Panel</title>
   <link rel="stylesheet" href="../style.css">
-  <script defer src="../control.js"></script>
+  <script src="../table.js"></script>
 </head>
 <body>
-<h1>D&E LIVE TV - Control Panel</h1>
+  <h1>D&E LIVE TV - Control Panel</h1>
 
-<label>Breaking News:</label><br>
-<input id="breakingInput" style="width:300px;"><br><br>
+  <button onclick="startBroadcast()">Start Broadcast</button>
+  <button onclick="endBroadcast()">End Broadcast</button><br><br>
 
-<label>Lower Third Title:</label><br>
-<input id="titleInput" style="width:300px;"><br><br>
+  <label>Breaking News:</label><br>
+  <input id="breakingInput"><br>
 
-<label>Lower Third Subtitle:</label><br>
-<input id="subInput" style="width:300px;"><br><br>
+  <label>Lower Third Title:</label><br>
+  <input id="titleInput"><br>
 
-<label>Ticker Text:</label><br>
-<textarea id="tickerInput" style="width:300px;height:80px;"></textarea><br><br>
+  <label>Lower Third Subtitle:</label><br>
+  <input id="subInput"><br>
 
-<button onclick="updateLive()">Update LIVE TV</button>
+  <label>Ticker Text:</label><br>
+  <textarea id="tickerInput"></textarea><br><br>
+
+  <button onclick="updateLive()">Update LIVE TV</button>
+
+  <script>
+    function startBroadcast(){
+      updateLiveState({...getLiveState(), broadcast_on:true});
+      alert("Broadcast started!");
+    }
+
+    function endBroadcast(){
+      updateLiveState({...getLiveState(), broadcast_on:false});
+      alert("Broadcast ended!");
+    }
+
+    function updateLive(){
+      const breaking = document.getElementById("breakingInput").value;
+      const lt_title = document.getElementById("titleInput").value;
+      const lt_sub = document.getElementById("subInput").value;
+      const ticker = document.getElementById("tickerInput").value;
+
+      updateLiveState({breaking, lt_title, lt_sub, ticker});
+      alert("LIVE TV updated!");
+    }
+  </script>
 </body>
 </html>
