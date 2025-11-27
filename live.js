@@ -5,7 +5,7 @@ let lastData = {};
 
 async function fetchLiveState() {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/live_state?id=eq.1`, {
-    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+    headers: { apikey: SUPABASE_KEY, Authorization:`Bearer ${SUPABASE_KEY}` }
   });
   const data = await res.json();
   if(data[0]){
