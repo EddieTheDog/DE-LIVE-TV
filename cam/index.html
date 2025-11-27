@@ -2,8 +2,9 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>D&E LIVE TV - Public Feed</title>
+  <title>D&E LIVE TV</title>
   <link rel="stylesheet" href="../style.css">
+  <script defer src="../webrtc.js"></script>
   <script defer src="../live.js"></script>
 </head>
 <body>
@@ -19,8 +20,7 @@
   </div>
 
   <div class="video-container">
-    <iframe src="https://www.youtube.com/embed/YOUR_LIVE_STREAM_ID?autoplay=1&mute=1" 
-            frameborder="0" allowfullscreen></iframe>
+    <video id="remoteVideo" autoplay playsinline controls style="width:100%; height:auto;"></video>
   </div>
 
   <div class="lower-third">
@@ -31,5 +31,9 @@
   <div class="ticker">
     <p id="ticker"></p>
   </div>
+
+  <script>
+    startViewer(); // function in webrtc.js
+  </script>
 </body>
 </html>
