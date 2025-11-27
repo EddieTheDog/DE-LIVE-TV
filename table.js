@@ -6,5 +6,5 @@ const LiveTable = {
   ticker: ""
 };
 
-function getLiveState(){ return {...LiveTable}; }
-function updateLiveState(updates){ Object.assign(LiveTable, updates); }
+function getLiveState() { return {...LiveTable}; }
+function updateLiveState(updates) { Object.assign(LiveTable, updates); }
