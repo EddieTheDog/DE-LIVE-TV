@@ -17,7 +17,7 @@
   <script defer>
     window.addEventListener('DOMContentLoaded', () => {
       const video = document.getElementById('remoteVideo');
-      const ws = new WebSocket('wss://YOUR-SIGNALING-SERVER.onrender.com'); // Replace with your Render WS URL
+      const ws = new WebSocket('wss://de-live-tv-signaling.onrender.com'); // <- Replace
       const pc = new RTCPeerConnection();
       const viewerId = Math.floor(Math.random()*1000000);
 
@@ -32,14 +32,13 @@
             await pc.setLocalDescription(answer);
             ws.send(JSON.stringify({type:'answer', sdp:answer, id:data.id}));
             break;
-
           case 'candidate':
             await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
             break;
         }
       };
 
-      pc.ontrack = event => video.srcObject = event.streams[0];
+      pc.ontrack = e => video.srcObject = e.streams[0];
 
       setInterval(() => {
         const state = getLiveState();
