@@ -1,23 +1,22 @@
-// Node.js signaling server
+// server.js
 const WebSocket = require('ws');
-
 const PORT = process.env.PORT || 8080;
 const wss = new WebSocket.Server({ port: PORT });
 
 let broadcaster = null;
 
-wss.on('connection', function connection(ws) {
-  ws.on('message', function incoming(message) {
-    const data = JSON.parse(message);
+wss.on('connection', ws => {
+  ws.on('message', msg => {
+    const data = JSON.parse(msg);
 
-    switch(data.type) {
+    switch(data.type){
       case 'broadcaster':
         broadcaster = ws;
         break;
 
       case 'watcher':
         ws.id = data.id;
-        if(broadcaster){
+        if(broadcaster && broadcaster.readyState === WebSocket.OPEN){
           broadcaster.send(JSON.stringify({type:'watcher', id:data.id}));
         }
         break;
@@ -39,7 +38,7 @@ wss.on('connection', function connection(ws) {
       case 'candidate':
         wss.clients.forEach(client => {
           if(client.id === data.id && client.readyState === WebSocket.OPEN){
-            client.send(JSON.stringify({type:'candidate', candidate:data.candidate}));
+            client.send(JSON.stringify({type:'candidate', candidate:data.candidate, id:data.id}));
           }
         });
         break;
