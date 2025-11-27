@@ -19,7 +19,8 @@
       const startBtn = document.getElementById('startCam');
       const stopBtn = document.getElementById('stopCam');
 
-      const ws = new WebSocket('wss://de-live-tv-signaling.onrender.com'); // Replace with your Render URL
+      // Replace with your deployed WebSocket URL
+      const ws = new WebSocket('wss://your-render-ws-service.onrender.com'); 
       let stream;
       let peerConnections = {};
 
