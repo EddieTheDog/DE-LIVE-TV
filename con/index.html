@@ -4,13 +4,12 @@
   <meta charset="UTF-8">
   <title>Control Panel</title>
   <link rel="stylesheet" href="../style.css">
-  <script src="../table.js"></script>
+  <script src="../table.js" defer></script>
 </head>
 <body>
-  <h1>D&E LIVE TV - Control Panel</h1>
-
-  <button onclick="startBroadcast()">Start Broadcast</button>
-  <button onclick="endBroadcast()">End Broadcast</button><br><br>
+  <h1>Control Panel</h1>
+  <button onclick="sendControl('start')">Start Broadcast</button>
+  <button onclick="sendControl('stop')">Stop Broadcast</button><br><br>
 
   <label>Breaking News:</label><br>
   <input id="breakingInput"><br>
@@ -26,26 +25,25 @@
 
   <button onclick="updateLive()">Update LIVE TV</button>
 
-  <script>
-    function startBroadcast(){
-      updateLiveState({...getLiveState(), broadcast_on:true});
-      alert("Broadcast started!");
-    }
+  <script defer>
+    window.addEventListener('DOMContentLoaded', () => {
+      const ws = new WebSocket('wss://YOUR-SIGNALING-SERVER.onrender.com'); // Replace
 
-    function endBroadcast(){
-      updateLiveState({...getLiveState(), broadcast_on:false});
-      alert("Broadcast ended!");
-    }
+      function sendControl(action){
+        ws.send(JSON.stringify({type:'control', action}));
+      }
 
-    function updateLive(){
-      const breaking = document.getElementById("breakingInput").value;
-      const lt_title = document.getElementById("titleInput").value;
-      const lt_sub = document.getElementById("subInput").value;
-      const ticker = document.getElementById("tickerInput").value;
+      window.sendControl = sendControl;
 
-      updateLiveState({breaking, lt_title, lt_sub, ticker});
-      alert("LIVE TV updated!");
-    }
+      window.updateLive = () => {
+        const breaking = document.getElementById("breakingInput").value;
+        const lt_title = document.getElementById("titleInput").value;
+        const lt_sub = document.getElementById("subInput").value;
+        const ticker = document.getElementById("tickerInput").value;
+        updateLiveState({breaking, lt_title, lt_sub, ticker});
+        alert("LIVE TV updated!");
+      };
+    });
   </script>
 </body>
 </html>
