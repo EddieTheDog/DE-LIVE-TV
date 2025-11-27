@@ -1,30 +1,47 @@
-// Replace with your signaling server / Supabase Realtime channels
-const signalingChannel = new EventTarget();
-let pc;
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-// Phone broadcasts live feed
-async function startBroadcast() {
+const SUPABASE_URL = "https://xcpwonsiujlckyglegli.supabase.co";
+const SUPABASE_KEY = "sb_publishable_YAmmAPO3ncT6OpAN07dQxA_R8H4kJgq";
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let pc;
+let channel;
+
+// **Phone Broadcast**
+export async function startBroadcast() {
   pc = new RTCPeerConnection();
   const localVideo = document.getElementById('localVideo');
   const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
   stream.getTracks().forEach(track => pc.addTrack(track, stream));
   localVideo.srcObject = stream;
 
-  // ICE candidates
   pc.onicecandidate = event => {
-    if (event.candidate) signalingChannel.dispatchEvent(new CustomEvent('ice-candidate', {detail: event.candidate}));
-  }
+    if(event.candidate) {
+      supabase.from('webrtc_channel').insert([{type:'ice', data:JSON.stringify(event.candidate)}]);
+    }
+  };
 
   const offer = await pc.createOffer();
   await pc.setLocalDescription(offer);
-  signalingChannel.dispatchEvent(new CustomEvent('offer', {detail: offer}));
 
-  signalingChannel.addEventListener('answer', e => pc.setRemoteDescription(new RTCSessionDescription(e.detail)));
-  signalingChannel.addEventListener('ice-candidate', e => pc.addIceCandidate(e.detail));
+  await supabase.from('webrtc_channel').insert([{type:'offer', data:JSON.stringify(offer)}]);
+
+  // Listen for answers from viewers
+  supabase.channel('webrtc_channel')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'webrtc_channel' }, payload => {
+      const record = payload.new;
+      if(record.type === 'answer') {
+        pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(record.data)));
+      } else if(record.type === 'ice') {
+        pc.addIceCandidate(JSON.parse(record.data));
+      }
+    })
+    .subscribe();
 }
 
-// Viewer receives live feed
-async function startViewer() {
+// **Viewer Page**
+export async function startViewer() {
   pc = new RTCPeerConnection();
   const remoteVideo = document.getElementById('remoteVideo');
 
@@ -33,15 +50,26 @@ async function startViewer() {
   }
 
   pc.onicecandidate = event => {
-    if (event.candidate) signalingChannel.dispatchEvent(new CustomEvent('ice-candidate', {detail: event.candidate}));
-  }
+    if(event.candidate) {
+      supabase.from('webrtc_channel').insert([{type:'ice', data:JSON.stringify(event.candidate)}]);
+    }
+  };
 
-  signalingChannel.addEventListener('offer', async e => {
-    await pc.setRemoteDescription(new RTCSessionDescription(e.detail));
-    const answer = await pc.createAnswer();
-    await pc.setLocalDescription(answer);
-    signalingChannel.dispatchEvent(new CustomEvent('answer', {detail: answer}));
-  });
+  // Listen for offer from broadcaster
+  const { data } = await supabase.from('webrtc_channel').select('*').eq('type','offer').limit(1).single();
+  await pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(data.data)));
+  const answer = await pc.createAnswer();
+  await pc.setLocalDescription(answer);
 
-  signalingChannel.addEventListener('ice-candidate', e => pc.addIceCandidate(e.detail));
+  await supabase.from('webrtc_channel').insert([{type:'answer', data:JSON.stringify(answer)}]);
+
+  // Listen for ICE from broadcaster
+  supabase.channel('webrtc_channel')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'webrtc_channel' }, payload => {
+      const record = payload.new;
+      if(record.type === 'ice') {
+        pc.addIceCandidate(JSON.parse(record.data));
+      }
+    })
+    .subscribe();
 }
