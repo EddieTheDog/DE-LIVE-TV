@@ -2,34 +2,41 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Camera Preview</title>
+  <title>Camera Feed</title>
   <link rel="stylesheet" href="../style.css">
-  <style>
-    body { display:flex; flex-direction:column; align-items:center; background:#000; color:#fff; font-family:Arial; }
-    video { margin-top:20px; width:90%; max-width:400px; border:2px solid red; }
-    button { margin-top:20px; padding:10px 20px; font-size:18px; }
-  </style>
 </head>
 <body>
   <h1>Camera Feed</h1>
-  <button id="startBtn">Start Camera</button>
-  <video id="localVideo" autoplay playsinline muted></video>
+  <video id="camVideo" autoplay playsinline muted style="width:90%; max-width:400px; border:2px solid red;"></video><br>
+  <button id="startCam">Start Camera</button>
+  <button id="stopCam" disabled>Stop Camera</button>
 
+  <script src="../table.js"></script>
   <script>
-    const startBtn = document.getElementById('startBtn');
-    const localVideo = document.getElementById('localVideo');
+    const video = document.getElementById('camVideo');
+    const startBtn = document.getElementById('startCam');
+    const stopBtn = document.getElementById('stopCam');
+    let stream;
 
-    startBtn.addEventListener('click', async () => {
+    startBtn.onclick = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video:true, audio:true });
-        localVideo.srcObject = stream;
+        stream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
+        video.srcObject = stream;
+        updateLiveState({broadcast_on:true, videoStream:stream});
         startBtn.disabled = true;
-        startBtn.textContent = "Camera On";
-      } catch(err) {
+        stopBtn.disabled = false;
+      } catch(err){
         alert("Cannot access camera: " + err);
-        console.error(err);
       }
-    });
+    }
+
+    stopBtn.onclick = () => {
+      if(stream) stream.getTracks().forEach(track=>track.stop());
+      video.srcObject = null;
+      updateLiveState({broadcast_on:false, videoStream:null});
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+    }
   </script>
 </body>
 </html>
