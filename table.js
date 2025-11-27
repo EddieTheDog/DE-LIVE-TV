@@ -1,18 +1,11 @@
-// Simulate a live_state table in the browser
+// Shared ticker / breaking news / lower thirds
 const LiveTable = {
-    id: 1,
-    broadcast_on: false,
-    breaking: "",
-    lt_title: "",
-    lt_sub: "",
-    ticker: ""
+  broadcast_on: false,
+  breaking: "",
+  lt_title: "",
+  lt_sub: "",
+  ticker: ""
 };
 
-// Functions to access the table
-function getLiveState() {
-    return {...LiveTable}; // return copy
-}
-
-function updateLiveState(updates) {
-    Object.assign(LiveTable, updates);
-}
+function getLiveState() { return {...LiveTable}; }
+function updateLiveState(updates) { Object.assign(LiveTable, updates); }
