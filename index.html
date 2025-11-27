@@ -17,7 +17,7 @@
   <script defer>
     window.addEventListener('DOMContentLoaded', () => {
       const video = document.getElementById('remoteVideo');
-      const ws = new WebSocket('wss://de-live-tv-signaling.onrender.com'); // Replace
+      const ws = new WebSocket('wss://your-render-ws-service.onrender.com'); 
       const pc = new RTCPeerConnection();
       const viewerId = Math.floor(Math.random()*1000000);
 
