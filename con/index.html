@@ -13,26 +13,25 @@
 
   <label>Breaking News:</label><br>
   <input id="breakingInput"><br>
-
   <label>Lower Third Title:</label><br>
   <input id="titleInput"><br>
-
   <label>Lower Third Subtitle:</label><br>
   <input id="subInput"><br>
-
   <label>Ticker Text:</label><br>
   <textarea id="tickerInput"></textarea><br><br>
-
   <button onclick="updateLive()">Update LIVE TV</button>
 
   <script defer>
     window.addEventListener('DOMContentLoaded', () => {
-      const ws = new WebSocket('wss://YOUR-SIGNALING-SERVER.onrender.com'); // Replace
+      const ws = new WebSocket('wss://de-live-tv-signaling.onrender.com'); // <- Replace
 
       function sendControl(action){
-        ws.send(JSON.stringify({type:'control', action}));
+        if(ws.readyState === WebSocket.OPEN){
+          ws.send(JSON.stringify({type:'control', action}));
+        } else {
+          alert("WebSocket not connected");
+        }
       }
-
       window.sendControl = sendControl;
 
       window.updateLive = () => {
