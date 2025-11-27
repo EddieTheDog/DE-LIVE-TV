@@ -1,13 +1,15 @@
 // server.js
 const WebSocket = require('ws');
 const PORT = process.env.PORT || 8080;
+
 const wss = new WebSocket.Server({ port: PORT });
+console.log(`WebSocket server running on port ${PORT}`);
 
 let broadcaster = null;
 
 wss.on('connection', ws => {
-  ws.on('message', msg => {
-    const data = JSON.parse(msg);
+  ws.on('message', message => {
+    const data = JSON.parse(message);
 
     switch(data.type){
       case 'broadcaster':
@@ -55,5 +57,3 @@ wss.on('connection', ws => {
     if(ws === broadcaster) broadcaster = null;
   });
 });
-
-console.log(`WebSocket signaling server running on port ${PORT}`);
