@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>D&E NEWS LIVE</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="live.js"></script>
+</head>
+<body>
+  <div class="header">
+    <div class="channel-name">D&E NEWS LIVE</div>
+    <div class="live-badge">LIVE</div>
+    <div id="clock"></div>
+  </div>
+
+  <div class="breaking-bar">
+    <span class="breaking-label">BREAKING</span>
+    <span id="breaking"></span>
+  </div>
+
+  <div class="video-container">
+    <iframe src="https://www.youtube.com/embed/YOUR_LIVE_STREAM_ID?autoplay=1&mute=1" 
+            frameborder="0" allowfullscreen></iframe>
+  </div>
+
+  <div class="lower-third">
+    <div id="lt-title"></div>
+    <div id="lt-sub"></div>
+  </div>
+
+  <div class="ticker">
+    <p id="ticker"></p>
+  </div>
+</body>
+</html>
