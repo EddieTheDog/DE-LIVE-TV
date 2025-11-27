@@ -1,4 +1,3 @@
-// Shared ticker / breaking news / lower thirds
 const LiveTable = {
   broadcast_on: false,
   breaking: "",
@@ -7,5 +6,5 @@ const LiveTable = {
   ticker: ""
 };
 
-function getLiveState() { return {...LiveTable}; }
-function updateLiveState(updates) { Object.assign(LiveTable, updates); }
+function getLiveState(){ return {...LiveTable}; }
+function updateLiveState(updates){ Object.assign(LiveTable, updates); }
