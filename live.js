@@ -10,12 +10,10 @@ async function fetchLiveState() {
   const data = await res.json();
   if(data[0]){
     const d = data[0];
-
     if(d.breaking !== lastData.breaking) document.getElementById("breaking").textContent = d.breaking;
     if(d.lt_title !== lastData.lt_title) document.getElementById("lt-title").textContent = d.lt_title;
     if(d.lt_sub !== lastData.lt_sub) document.getElementById("lt-sub").textContent = d.lt_sub;
     if(d.ticker !== lastData.ticker) document.getElementById("ticker").textContent = d.ticker;
-
     lastData = d;
   }
 }
