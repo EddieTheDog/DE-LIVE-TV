@@ -1,7 +1,8 @@
-// Requires Node.js
+// Node.js signaling server
 const WebSocket = require('ws');
 
-const wss = new WebSocket.Server({ port: 8080 });
+const PORT = process.env.PORT || 8080;
+const wss = new WebSocket.Server({ port: PORT });
 
 let broadcaster = null;
 
@@ -15,41 +16,45 @@ wss.on('connection', function connection(ws) {
         break;
 
       case 'watcher':
-        if(broadcaster) {
-          broadcaster.send(JSON.stringify({ type: 'watcher', id: data.id }));
+        ws.id = data.id;
+        if(broadcaster){
+          broadcaster.send(JSON.stringify({type:'watcher', id:data.id}));
         }
         break;
 
       case 'offer':
-        // send offer from broadcaster to viewer
         wss.clients.forEach(client => {
-          if(client !== broadcaster && client.readyState === WebSocket.OPEN && client.id === data.id) {
-            client.send(JSON.stringify({ type: 'offer', sdp: data.sdp, id: data.id }));
+          if(client.id === data.id && client.readyState === WebSocket.OPEN){
+            client.send(JSON.stringify({type:'offer', sdp:data.sdp, id:data.id}));
           }
         });
         break;
 
       case 'answer':
-        // send answer from viewer to broadcaster
-        if(broadcaster && broadcaster.readyState === WebSocket.OPEN) {
-          broadcaster.send(JSON.stringify({ type: 'answer', sdp: data.sdp, id: data.id }));
+        if(broadcaster && broadcaster.readyState === WebSocket.OPEN){
+          broadcaster.send(JSON.stringify({type:'answer', sdp:data.sdp, id:data.id}));
         }
         break;
 
       case 'candidate':
-        // forward ICE candidate
         wss.clients.forEach(client => {
-          if(client.id === data.id && client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({ type: 'candidate', candidate: data.candidate }));
+          if(client.id === data.id && client.readyState === WebSocket.OPEN){
+            client.send(JSON.stringify({type:'candidate', candidate:data.candidate}));
           }
         });
+        break;
+
+      case 'control':
+        if(broadcaster && broadcaster.readyState === WebSocket.OPEN){
+          broadcaster.send(JSON.stringify({type:'control', action:data.action}));
+        }
         break;
     }
   });
 
-  ws.on('close', function() {
-    if(ws === broadcaster) {
-      broadcaster = null;
-    }
+  ws.on('close', () => {
+    if(ws === broadcaster) broadcaster = null;
   });
 });
+
+console.log(`WebSocket signaling server running on port ${PORT}`);
