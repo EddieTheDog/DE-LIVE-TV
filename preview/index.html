@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Phone Camera Preview</title>
+  <link rel="stylesheet" href="../style.css">
+  <script defer src="../live.js"></script>
+</head>
+<body>
+  <div class="header">
+    <div class="channel-name">Preview Camera</div>
+    <div class="live-badge">PREVIEW</div>
+    <div id="clock"></div>
+  </div>
+
+  <div class="video-container">
+    <video id="phoneVideo" autoplay playsinline></video>
+  </div>
+
+  <script>
+    async function startCamera() {
+      const video = document.getElementById('phoneVideo');
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        video.srcObject = stream;
+      } catch (err) {
+        alert("Camera access denied or not supported.");
+        console.error(err);
+      }
+    }
+    startCamera();
+  </script>
+</body>
+</html>
