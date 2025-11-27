@@ -1,4 +1,4 @@
-const SUPABASE_URL = "YOUR_PROJECT_URL"; // e.g. https://xyzcompany.supabase.co
+const SUPABASE_URL = "https://xcpwonsiujlckyglegli.supabase.co";
 const SUPABASE_KEY = "sb_publishable_YAmmAPO3ncT6OpAN07dQxA_R8H4kJgq";
 
 async function fetchLiveState() {
