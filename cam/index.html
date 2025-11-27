@@ -2,38 +2,34 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>D&E LIVE TV</title>
+  <title>Camera Preview</title>
   <link rel="stylesheet" href="../style.css">
-  <script defer src="../webrtc.js"></script>
-  <script defer src="../live.js"></script>
+  <style>
+    body { display:flex; flex-direction:column; align-items:center; background:#000; color:#fff; font-family:Arial; }
+    video { margin-top:20px; width:90%; max-width:400px; border:2px solid red; }
+    button { margin-top:20px; padding:10px 20px; font-size:18px; }
+  </style>
 </head>
 <body>
-  <div class="header">
-    <div class="channel-name">D&E LIVE TV</div>
-    <div class="live-badge">LIVE</div>
-    <div id="clock"></div>
-  </div>
-
-  <div class="breaking-bar">
-    <span class="breaking-label">BREAKING</span>
-    <span id="breaking"></span>
-  </div>
-
-  <div class="video-container">
-    <video id="remoteVideo" autoplay playsinline controls></video>
-  </div>
-
-  <div class="lower-third">
-    <div id="lt-title"></div>
-    <div id="lt-sub"></div>
-  </div>
-
-  <div class="ticker">
-    <p id="ticker"></p>
-  </div>
+  <h1>Camera Feed</h1>
+  <button id="startBtn">Start Camera</button>
+  <video id="localVideo" autoplay playsinline muted></video>
 
   <script>
-    startViewer(); // from webrtc.js
+    const startBtn = document.getElementById('startBtn');
+    const localVideo = document.getElementById('localVideo');
+
+    startBtn.addEventListener('click', async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video:true, audio:true });
+        localVideo.srcObject = stream;
+        startBtn.disabled = true;
+        startBtn.textContent = "Camera On";
+      } catch(err) {
+        alert("Cannot access camera: " + err);
+        console.error(err);
+      }
+    });
   </script>
 </body>
 </html>
