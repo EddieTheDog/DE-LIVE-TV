@@ -4,20 +4,22 @@
   <meta charset="UTF-8">
   <title>Camera Broadcast</title>
   <link rel="stylesheet" href="../style.css">
+  <script src="../table.js" defer></script>
 </head>
 <body>
   <h1>Camera Broadcast</h1>
   <video id="localVideo" autoplay playsinline muted style="width:90%; border:2px solid red;"></video>
+  <br>
   <button id="startCam">Start Broadcast</button>
   <button id="stopCam" disabled>Stop Broadcast</button>
 
-  <script src="../table.js" defer></script>
   <script defer>
     window.addEventListener('DOMContentLoaded', async () => {
       const video = document.getElementById('localVideo');
       const startBtn = document.getElementById('startCam');
       const stopBtn = document.getElementById('stopCam');
-      const ws = new WebSocket('wss://de-live-tv-signaling.onrender.com'); // <- Replace with your Render URL
+
+      const ws = new WebSocket('wss://de-live-tv-signaling.onrender.com'); // Replace with your Render URL
       let stream;
       let peerConnections = {};
 
@@ -54,19 +56,23 @@
       };
 
       async function startBroadcast(){
-        stream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
-        video.srcObject = stream;
-        updateLiveState({broadcast_on:true});
-        startBtn.disabled = true;
-        stopBtn.disabled = false;
+        if(!stream){
+          stream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
+          video.srcObject = stream;
+          updateLiveState({broadcast_on:true});
+          startBtn.disabled = true;
+          stopBtn.disabled = false;
+        }
       }
 
       function stopBroadcast(){
-        if(stream) stream.getTracks().forEach(t => t.stop());
-        video.srcObject = null;
-        updateLiveState({broadcast_on:false});
-        startBtn.disabled = false;
-        stopBtn.disabled = true;
+        if(stream){
+          stream.getTracks().forEach(t => t.stop());
+          video.srcObject = null;
+          updateLiveState({broadcast_on:false});
+          startBtn.disabled = false;
+          stopBtn.disabled = true;
+        }
       }
 
       startBtn.onclick = startBroadcast;
