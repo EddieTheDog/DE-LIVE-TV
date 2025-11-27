@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>D&E LIVE TV - Live from Phone</title>
+  <title>D&E LIVE TV - Public Feed</title>
   <link rel="stylesheet" href="../style.css">
   <script defer src="../live.js"></script>
 </head>
@@ -19,7 +19,8 @@
   </div>
 
   <div class="video-container">
-    <video id="phoneVideo" autoplay playsinline></video>
+    <iframe src="https://www.youtube.com/embed/YOUR_LIVE_STREAM_ID?autoplay=1&mute=1" 
+            frameborder="0" allowfullscreen></iframe>
   </div>
 
   <div class="lower-third">
@@ -30,19 +31,5 @@
   <div class="ticker">
     <p id="ticker"></p>
   </div>
-
-  <script>
-    async function startCamera() {
-      const video = document.getElementById('phoneVideo');
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-        video.srcObject = stream;
-      } catch (err) {
-        alert("Camera access denied or not supported.");
-        console.error(err);
-      }
-    }
-    startCamera();
-  </script>
 </body>
 </html>
