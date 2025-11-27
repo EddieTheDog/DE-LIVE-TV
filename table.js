@@ -1,3 +1,4 @@
+// table.js
 const LiveTable = {
   broadcast_on: false,
   breaking: "",
