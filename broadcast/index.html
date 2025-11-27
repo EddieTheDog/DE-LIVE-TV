@@ -2,17 +2,36 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Broadcast Camera</title>
-  <link rel="stylesheet" href="../style.css">
-  <script defer src="../webrtc.js"></script>
+  <title>Phone Camera Broadcast</title>
+  <style>
+    body { background: black; color: white; font-family: Arial; text-align:center; padding:20px; }
+    video { width: 100%; max-width: 400px; margin-top: 20px; border: 2px solid red; }
+    button { padding: 10px 20px; font-size: 18px; margin-top: 20px; }
+  </style>
 </head>
 <body>
-  <h1>Phone Camera Broadcast</h1>
-  <video id="localVideo" autoplay playsinline muted style="width:100%; height:auto;"></video>
-  <p>Keep this page open to broadcast live.</p>
+  <h1>LIVE CAMERA BROADCAST</h1>
+  <button id="startBtn">Start Camera</button>
+  <video id="localVideo" autoplay playsinline muted></video>
 
   <script>
-    startBroadcast(); // function in webrtc.js
+    const startBtn = document.getElementById('startBtn');
+    const localVideo = document.getElementById('localVideo');
+
+    async function startCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        localVideo.srcObject = stream;
+        startBtn.disabled = true;
+        startBtn.textContent = "Camera On";
+        // TODO: Connect this stream to WebRTC / signaling server for viewers
+      } catch (err) {
+        alert("Cannot access camera: " + err);
+        console.error(err);
+      }
+    }
+
+    startBtn.addEventListener('click', startCamera);
   </script>
 </body>
 </html>
