@@ -1,18 +1,4 @@
-body {
-    font-family: Arial, sans-serif;
-    background: #111;
-    color: #fff;
-    text-align: center;
-    padding: 10px;
-}
-input, textarea, button {
-    margin: 5px;
-    padding: 5px;
-}
-button {
-    cursor: pointer;
-    font-size: 16px;
-}
-video {
-    margin-top: 10px;
-}
+body { font-family: Arial, sans-serif; background:#111; color:#fff; text-align:center; padding:10px; }
+input, textarea, button { margin:5px; padding:5px; }
+button { cursor:pointer; font-size:16px; }
+video { margin-top:10px; border-radius:5px; }
