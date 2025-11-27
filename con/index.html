@@ -23,13 +23,16 @@
 
   <script defer>
     window.addEventListener('DOMContentLoaded', () => {
-      const ws = new WebSocket('wss://de-live-tv-signaling.onrender.com'); // <- Replace
+      const ws = new WebSocket('wss://de-live-tv-signaling.onrender.com'); // Replace
+
+      ws.onopen = () => console.log("Control panel connected to WebSocket");
 
       function sendControl(action){
         if(ws.readyState === WebSocket.OPEN){
           ws.send(JSON.stringify({type:'control', action}));
         } else {
-          alert("WebSocket not connected");
+          console.log("WebSocket not open yet, retrying...");
+          setTimeout(() => sendControl(action), 500);
         }
       }
       window.sendControl = sendControl;
