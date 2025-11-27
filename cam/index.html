@@ -2,41 +2,56 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Camera Feed</title>
-  <link rel="stylesheet" href="../style.css">
+  <title>Camera Broadcast</title>
+  <script src="../table.js"></script>
 </head>
 <body>
-  <h1>Camera Feed</h1>
-  <video id="camVideo" autoplay playsinline muted style="width:90%; max-width:400px; border:2px solid red;"></video><br>
-  <button id="startCam">Start Camera</button>
-  <button id="stopCam" disabled>Stop Camera</button>
+  <h1>Camera Broadcast</h1>
+  <video id="localVideo" autoplay playsinline muted style="width:80%; border:2px solid red;"></video>
+  <button id="startCam">Start Broadcast</button>
 
-  <script src="../table.js"></script>
   <script>
-    const video = document.getElementById('camVideo');
-    const startBtn = document.getElementById('startCam');
-    const stopBtn = document.getElementById('stopCam');
+    const video = document.getElementById('localVideo');
+    const ws = new WebSocket('ws://localhost:8080'); // Replace with Render URL
+    let peerConnections = {};
     let stream;
 
-    startBtn.onclick = async () => {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
-        video.srcObject = stream;
-        updateLiveState({broadcast_on:true, videoStream:stream});
-        startBtn.disabled = true;
-        stopBtn.disabled = false;
-      } catch(err){
-        alert("Cannot access camera: " + err);
-      }
-    }
+    ws.onopen = () => ws.send(JSON.stringify({type:'broadcaster'}));
 
-    stopBtn.onclick = () => {
-      if(stream) stream.getTracks().forEach(track=>track.stop());
-      video.srcObject = null;
-      updateLiveState({broadcast_on:false, videoStream:null});
-      startBtn.disabled = false;
-      stopBtn.disabled = true;
-    }
+    ws.onmessage = async msg => {
+      const data = JSON.parse(msg.data);
+      switch(data.type){
+        case 'watcher':
+          const pc = new RTCPeerConnection();
+          stream.getTracks().forEach(track => pc.addTrack(track, stream));
+          peerConnections[data.id] = pc;
+
+          pc.onicecandidate = event => {
+            if(event.candidate){
+              ws.send(JSON.stringify({type:'candidate', candidate:event.candidate, id:data.id}));
+            }
+          };
+
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+          ws.send(JSON.stringify({type:'offer', sdp:offer, id:data.id}));
+          break;
+
+        case 'answer':
+          await peerConnections[data.id].setRemoteDescription(new RTCSessionDescription(data.sdp));
+          break;
+
+        case 'candidate':
+          await peerConnections[data.id].addIceCandidate(new RTCIceCandidate(data.candidate));
+          break;
+      }
+    };
+
+    document.getElementById('startCam').onclick = async () => {
+      stream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
+      video.srcObject = stream;
+      updateLiveState({broadcast_on:true});
+    };
   </script>
 </body>
 </html>
