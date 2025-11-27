@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>D&E LIVE TV</title>
-  <script src="table.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <script src="table.js" defer></script>
 </head>
 <body>
   <h1>D&E LIVE TV</h1>
@@ -13,40 +14,41 @@
   <div id="ltSub"></div>
   <div id="ticker"></div>
 
-  <script>
-    const video = document.getElementById('remoteVideo');
-    const ws = new WebSocket('ws://localhost:8080'); // Replace with Render URL
-    const pc = new RTCPeerConnection();
-    const viewerId = Math.floor(Math.random()*1000000);
+  <script defer>
+    window.addEventListener('DOMContentLoaded', () => {
+      const video = document.getElementById('remoteVideo');
+      const ws = new WebSocket('wss://YOUR-SIGNALING-SERVER.onrender.com'); // Replace with your Render WS URL
+      const pc = new RTCPeerConnection();
+      const viewerId = Math.floor(Math.random()*1000000);
 
-    ws.onopen = () => ws.send(JSON.stringify({type:'watcher', id:viewerId}));
+      ws.onopen = () => ws.send(JSON.stringify({type:'watcher', id:viewerId}));
 
-    ws.onmessage = async msg => {
-      const data = JSON.parse(msg.data);
-      switch(data.type){
-        case 'offer':
-          await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
-          const answer = await pc.createAnswer();
-          await pc.setLocalDescription(answer);
-          ws.send(JSON.stringify({type:'answer', sdp:answer, id:data.id}));
-          break;
+      ws.onmessage = async msg => {
+        const data = JSON.parse(msg.data);
+        switch(data.type){
+          case 'offer':
+            await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            ws.send(JSON.stringify({type:'answer', sdp:answer, id:data.id}));
+            break;
 
-        case 'candidate':
-          await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
-          break;
-      }
-    };
+          case 'candidate':
+            await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+            break;
+        }
+      };
 
-    pc.ontrack = event => video.srcObject = event.streams[0];
+      pc.ontrack = event => video.srcObject = event.streams[0];
 
-    // Update live ticker every 500ms
-    setInterval(() => {
-      const state = getLiveState();
-      document.getElementById('breaking').textContent = state.breaking;
-      document.getElementById('ltTitle').textContent = state.lt_title;
-      document.getElementById('ltSub').textContent = state.lt_sub;
-      document.getElementById('ticker').textContent = state.ticker;
-    }, 500);
+      setInterval(() => {
+        const state = getLiveState();
+        document.getElementById('breaking').textContent = state.breaking;
+        document.getElementById('ltTitle').textContent = state.lt_title;
+        document.getElementById('ltSub').textContent = state.lt_sub;
+        document.getElementById('ticker').textContent = state.ticker;
+      }, 500);
+    });
   </script>
 </body>
 </html>
